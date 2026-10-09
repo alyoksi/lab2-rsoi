@@ -1,34 +1,25 @@
+import os
+
+os.environ["DB_URL"] = "sqlite:///./test.db"
+
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from main import app, Base, get_db, Airport, Flight
+from main import app, engine, Base, SessionLocal, Airport, Flight
 import datetime
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///:memory:"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-Base.metadata.create_all(bind=engine)
-
-def override_get_db():
-    db = TestingSessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-app.dependency_overrides[get_db] = override_get_db
 client = TestClient(app)
 
 @pytest.fixture(autouse=True)
 def setup_db():
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
-    db = TestingSessionLocal()
+    
+    db = SessionLocal()
     a1 = Airport(id=1, name="Шереметьево", city="Москва", country="Россия")
     a2 = Airport(id=2, name="Пулково", city="Санкт-Петербург", country="Россия")
     db.add_all([a1, a2])
+    db.commit()
+    
     f1 = Flight(
         id=1,
         flight_number="AFL031",
@@ -40,6 +31,8 @@ def setup_db():
     db.add(f1)
     db.commit()
     db.close()
+    yield
+    Base.metadata.drop_all(bind=engine)
 
 def test_health():
     response = client.get("/manage/health")
