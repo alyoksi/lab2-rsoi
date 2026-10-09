@@ -65,7 +65,7 @@ async def get_ticket(ticket_uid: str, x_user_name: str = Header(..., alias="X-Us
             "date": f_data.get("date", ""),
             "price": t["price"],
             "status": t["status"]
-        })
+        }
 
 class TicketPurchaseRequest(BaseModel):
     flightNumber: str
