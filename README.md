@@ -1,4 +1,4 @@
-# Лабораторная работа #2
+# Лабораторная работа #2, вариант №1
 
 ![GitHub Classroom Workflow](../../workflows/GitHub%20Classroom%20Workflow/badge.svg?branch=master)
 
@@ -62,10 +62,6 @@
 
 ### Варианты заданий
 
-Варианты заданий берутся исходя из формулы:
-(номер в [списке группы](https://docs.google.com/spreadsheets/d/1BT5iLgERiWUPPn4gtOQk4KfHjVOTQbUS7ragAJrl6-Q)-1) % 4)+1.
+Вариант №1:
 
 1. [Flight Booking System](v1/README.md)
-1. [Hotels Booking System](v2/README.md)
-1. [Car Rental System](v3/README.md)
-1. [Library System](v4/README.md)
