@@ -54,18 +54,6 @@ def get_tickets(x_user_name: str = Header(..., alias="X-User-Name"), db: Session
         })
     return result
 
-@app.get("/api/v1/tickets/{ticket_uid}")
-def get_ticket(ticket_uid: str, x_user_name: str = Header(..., alias="X-User-Name"), db: Session = Depends(get_db)):
-    t = db.query(Ticket).filter(Ticket.ticket_uid == ticket_uid, Ticket.username == x_user_name).first()
-    if not t:
-        raise HTTPException(status_code=404, detail="Ticket not found")
-    return {
-        "ticketUid": str(t.ticket_uid),
-        "flightNumber": t.flight_number,
-        "price": t.price,
-        "status": t.status
-    }
-
 @app.post("/api/v1/tickets")
 def create_ticket(data: TicketCreate, db: Session = Depends(get_db)):
     t_uid = uuid.UUID(data.ticketUid) if data.ticketUid else uuid.uuid4()
@@ -86,9 +74,31 @@ def create_ticket(data: TicketCreate, db: Session = Depends(get_db)):
         "status": t.status
     }
 
+@app.get("/api/v1/tickets/{ticket_uid}")
+def get_ticket(ticket_uid: str, x_user_name: str = Header(..., alias="X-User-Name"), db: Session = Depends(get_db)):
+    try:
+        u_uid = uuid.UUID(ticket_uid)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid UUID format")
+        
+    t = db.query(Ticket).filter(Ticket.ticket_uid == u_uid, Ticket.username == x_user_name).first()
+    if not t:
+        raise HTTPException(status_code=404, detail="Ticket not found")
+    return {
+        "ticketUid": str(t.ticket_uid),
+        "flightNumber": t.flight_number,
+        "price": t.price,
+        "status": t.status
+    }
+
 @app.delete("/api/v1/tickets/{ticket_uid}")
 def cancel_ticket(ticket_uid: str, x_user_name: str = Header(..., alias="X-User-Name"), db: Session = Depends(get_db)):
-    t = db.query(Ticket).filter(Ticket.ticket_uid == ticket_uid, Ticket.username == x_user_name).first()
+    try:
+        u_uid = uuid.UUID(ticket_uid)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid UUID format")
+        
+    t = db.query(Ticket).filter(Ticket.ticket_uid == u_uid, Ticket.username == x_user_name).first()
     if not t:
         raise HTTPException(status_code=404, detail="Ticket not found")
     t.status = "CANCELED" 
