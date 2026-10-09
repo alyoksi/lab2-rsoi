@@ -14,7 +14,53 @@ services:
     ports:
       - "5432:5432"
 
-# TODO добавить сервисы
+  flight-service:
+    build: ./flight-service
+    container_name: flight-service
+    ports:
+      - "8060:8060"
+    environment:
+      - DB_URL=postgresql://program:test@postgres:5432/flights
+    depends_on:
+      - postgres
+    restart: on-failure
+
+  ticket-service:
+    build: ./ticket-service
+    container_name: ticket-service
+    ports:
+      - "8070:8070"
+    environment:
+      - DB_URL=postgresql://program:test@postgres:5432/tickets
+    depends_on:
+      - postgres
+    restart: on-failure
+
+  bonus-service:
+    build: ./bonus-service
+    container_name: bonus-service
+    ports:
+      - "8050:8050"
+    environment:
+      - DB_URL=postgresql://program:test@postgres:5432/privileges
+    depends_on:
+      - postgres
+    restart: on-failure
+
+  gateway-service:
+    build: ./gateway
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    environment:
+      - FLIGHT_SERVICE_URL=http://flight-service:8060
+      - TICKET_SERVICE_URL=http://ticket-service:8070
+      - BONUS_SERVICE_URL=http://bonus-service:8050
+    depends_on:
+      - flight-service
+      - ticket-service
+      - bonus-service
+    restart: on-failure
 
 volumes:
   db-data:
